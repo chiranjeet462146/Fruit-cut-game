@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fruit Cut Game</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #222;
+      color: #fff;
+      font-family: sans-serif;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+    }
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 22px;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div id="score">Score: 0 | Bombs: 0 | High Score: 0</div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let fruits = [];
+    let trails = [];
+    let score = 0;
+    let highScore = localStorage.getItem("fruitHighScore") || 0;
+    let bombsHit = 0;
+    const maxBombs = 3;
+    const gravity = 0.4;
+    let isGameOver = false;
+
+    const fruitEmojis = ["🍌", "🍇", "🍊", "🍑", "🍋", "🍒", "🍓"];
+    const bombEmoji = "💣";
+
+    function spawnFruit() {
+      const x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
+      const y = canvas.height + 60;
+      const radius = 90; // Increased from 60 to 90
+      const speedX = (Math.random() - 0.5) * 10;
+      const speedY = -20 - Math.random() * 5;
+      const type = Math.random() < 0.2 ? "bomb" : "fruit";
+      const emoji = type === "bomb" ? bombEmoji : fruitEmojis[Math.floor(Math.random() * fruitEmojis.length)];
+
+      fruits.push({ x, y, radius, speedX, speedY, type, emoji, cut: false });
+    }
+
+    function drawFruit(fruit) {
+      ctx.font = fruit.radius + "px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(fruit.emoji, fruit.x, fruit.y);
+    }
+
+    function updateFruits() {
+      fruits.forEach(fruit => {
+        fruit.x += fruit.speedX;
+        fruit.y += fruit.speedY;
+        fruit.speedY += gravity;
+      });
+      fruits = fruits.filter(f => f.y < canvas.height + 100 && !f.cut);
+    }
+
+    function drawTrails() {
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      for (let i = 0; i < trails.length - 1; i++) {
+        const p1 = trails[i];
+        const p2 = trails[i + 1];
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+      }
+      ctx.stroke();
+      trails = trails.slice(-10);
+    }
+
+    function detectCuts() {
+      if (trails.length < 2) return;
+
+      for (let i = 0; i < fruits.length; i++) {
+        const fruit = fruits[i];
+        if (fruit.cut) continue;
+
+        for (let j = 0; j < trails.length - 1; j++) {
+          const p1 = trails[j];
+          const p2 = trails[j + 1];
+
+          const dx = fruit.x - ((p1.x + p2.x) / 2);
+          const dy = fruit.y - ((p1.y + p2.y) / 2);
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < fruit.radius / 2) {
+            fruit.cut = true;
+            if (fruit.type === "bomb") {
+              bombsHit++;
+              if (bombsHit >= maxBombs) {
+                gameOver();
+              }
+            } else {
+              score++;
+              if (score > highScore) {
+                highScore = score;
+                localStorage.setItem("fruitHighScore", highScore);
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    function gameOver() {
+      isGameOver = true;
+      alert("Game Over!\nScore: " + score + "\nHigh Score: " + highScore);
+      location.reload();
+    }
+
+    function drawScore() {
+      document.getElementById("score").textContent =
+        `Score: ${score} | Bombs: ${bombsHit} | High Score: ${highScore}`;
+    }
+
+    function gameLoop() {
+      if (isGameOver) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawScore();
+      updateFruits();
+      fruits.forEach(drawFruit);
+      drawTrails();
+      detectCuts();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    setInterval(() => {
+      if (!isGameOver) spawnFruit();
+    }, 900);
+
+    canvas.addEventListener("mousemove", e => {
+      trails.push({ x: e.clientX, y: e.clientY });
+    });
+
+    canvas.addEventListener("touchmove", e => {
+      const touch = e.touches[0];
+      trails.push({ x: touch.clientX, y: touch.clientY });
+    });
+
+    gameLoop();
+  </script>
+</body>
+</html>
