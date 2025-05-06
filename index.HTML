@@ -51,16 +51,17 @@
     const bombEmoji = "💣";
 
     function spawnFruit() {
-      const x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
-      const y = canvas.height + 60;
-      const radius = 90; // Increased from 60 to 90
-      const speedX = (Math.random() - 0.5) * 10;
-      const speedY = -20 - Math.random() * 5;
-      const type = Math.random() < 0.2 ? "bomb" : "fruit";
-      const emoji = type === "bomb" ? bombEmoji : fruitEmojis[Math.floor(Math.random() * fruitEmojis.length)];
+  const x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
+  const y = canvas.height + 60;
+  const radius = 90;
+  const speedX = (Math.random() - 0.5) * 10;
+  const speedY = -30 - Math.random() * 8; // Higher jump
+  const type = Math.random() < 0.2 ? "bomb" : "fruit";
+  const emoji = type === "bomb" ? bombEmoji : fruitEmojis[Math.floor(Math.random() * fruitEmojis.length)];
 
-      fruits.push({ x, y, radius, speedX, speedY, type, emoji, cut: false });
-    }
+  fruits.push({ x, y, radius, speedX, speedY, type, emoji, cut: false });
+}
+
 
     function drawFruit(fruit) {
       ctx.font = fruit.radius + "px Arial";
