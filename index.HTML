@@ -47,7 +47,7 @@
     const gravity = 0.4;
     let isGameOver = false;
 
-    const fruitEmojis = ["🍌", "🍇", "🍊", "🍑", "🍋", "🍒", "🍓"];
+    const fruitEmojis = ["🍌", "🍎", "🍉", "🍍", "🍇", "🍊", "🍑", "🍋", "🍒", "🍓"];
     const bombEmoji = "💣";
 
     function spawnFruit() {
@@ -55,7 +55,7 @@
       const y = canvas.height + 50;
       const radius = 60;
       const speedX = (Math.random() - 0.5) * 10;
-      const speedY = -18 - Math.random() * 5;
+      const speedY = -15 - Math.random() * 8;
       const type = Math.random() < 0.2 ? "bomb" : "fruit";
       const emoji = type === "bomb" ? bombEmoji : fruitEmojis[Math.floor(Math.random() * fruitEmojis.length)];
 
